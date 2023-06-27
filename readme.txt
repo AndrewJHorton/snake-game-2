@@ -1,0 +1,1 @@
+updated snake game in this i madee it to where the snake is changing colors in a rainbow form, and while in doing so i also added a start button to start the game and it even counts how long the snake gets and tells you at the end of the game.

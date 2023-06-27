@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Snake Game</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        canvas {
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snake Game</h1>
+    <button id="startButton">Start Game</button>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <script>
+        // Initialize the game variables
+        const canvas = document.getElementById("gameCanvas");
+        const context = canvas.getContext("2d");
+        const boxSize = 20;
+        let snake = [
+            { x: 8 * boxSize, y: 8 * boxSize }
+        ];
+        let direction = "right";
+        let dot = { x: getRandomPosition(), y: getRandomPosition() };
+        let score = 0;
+        let level = 1;
+        let interval;
+        let snakeColor = "green";
+        let flashingColors = [
+            "red", "orange", "yellow", "green", "blue", "indigo", "violet"
+        ];
+        let flashIndex = 0;
+
+        // Generate a random position for the dot
+        function getRandomPosition() {
+            return Math.floor(Math.random() * 20) * boxSize;
+        }
+
+        // Function to draw the snake
+        function drawSnake() {
+            for (let i = 0; i < snake.length; i++) {
+                context.fillStyle = (i === 0 && level > 1) ? "red" : snakeColor;
+                context.fillRect(snake[i].x, snake[i].y, boxSize, boxSize);
+            }
+        }
+
+        // Function to draw the dot
+        function drawDot() {
+            context.fillStyle = "red";
+            context.fillRect(dot.x, dot.y, boxSize, boxSize);
+        }
+
+        // Function to move the snake
+        function moveSnake() {
+            const head = { x: snake[0].x, y: snake[0].y };
+
+            // Move the head based on the direction
+            if (direction === "up") head.y -= boxSize;
+            if (direction === "down") head.y += boxSize;
+            if (direction === "left") head.x -= boxSize;
+            if (direction === "right") head.x += boxSize;
+
+            // Check if the snake collides with the dot
+            if (head.x === dot.x && head.y === dot.y) {
+                score++;
+
+                // Check if it's time to increase the level
+                if (score % 5 === 0) {
+                    level++;
+                    snakeColor = "red";
+                }
+
+                // Generate a new dot
+                dot.x = getRandomPosition();
+                dot.y = getRandomPosition();
+            } else {
+                // Remove the tail segment if the snake didn't eat a dot
+                snake.pop();
+            }
+
+            // Check if the snake collides with the wall or itself
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height || checkCollision(head)) {
+                clearInterval(interval);
+                alert("Game Over! Your score: " + score);
+                location.reload();
+            }
+
+            // Add the new head to the snake
+            snake.unshift(head);
+        }
+
+        // Function to check if the snake collides with itself
+        function checkCollision(head) {
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Function to handle keyboard events
+        function handleKeyPress(event) {
+            if (event.key === "ArrowUp" && direction !== "down") {
+                direction = "up";
+            } else if (event.key === "ArrowDown" && direction !== "up") {
+                direction = "down";
+            } else if (event.key === "ArrowLeft" && direction !== "right") {
+                direction = "left";
+            } else if (event.key === "ArrowRight" && direction !== "left") {
+                direction = "right";
+            }
+        }
+
+        // Function to clear the canvas
+        function clearCanvas() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Function to update and draw the game
+        function gameLoop() {
+            clearCanvas();
+            drawSnake();
+            drawDot();
+            moveSnake();
+        }
+
+        // Function to change the snake color
+        function changeSnakeColor() {
+            snakeColor = flashingColors[flashIndex];
+            flashIndex = (flashIndex + 1) % flashingColors.length;
+        }
+
+        // Function to start the game
+        function startGame() {
+            document.getElementById("startButton").style.display = "none";
+            canvas.focus();
+            interval = setInterval(gameLoop, 150);
+            setInterval(changeSnakeColor, 300);
+        }
+
+        // Event listener for the start button
+        document.getElementById("startButton").addEventListener("click", startGame);
+
+        // Event listener for keyboard events
+        document.addEventListener("keydown", handleKeyPress);
+    </script>
+</body>
+</html>
